@@ -4,7 +4,11 @@ import { NextFunction, Response } from "express";
 import { CustomRequestMiddleware } from "../types/CustomReqMiddleware";
 
 export const checkRole = (roles: Role[]) => {
-  return (req: CustomRequestMiddleware, res: Response, next: NextFunction) => {
+  return async (
+    req: CustomRequestMiddleware,
+    res: Response,
+    next: NextFunction
+  ): Promise<any> => {
     if (!req.user) {
       return res.status(401).json({ message: "Вы не авторизованы" });
     }

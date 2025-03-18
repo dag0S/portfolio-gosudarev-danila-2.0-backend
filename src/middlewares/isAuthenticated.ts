@@ -11,7 +11,7 @@ export const isAuthenticated = async (
   req: CustomRequestMiddleware,
   res: Response,
   next: NextFunction
-) => {
+): Promise<any> => {
   try {
     const token = req.cookies[COOKIE_NAME];
 
