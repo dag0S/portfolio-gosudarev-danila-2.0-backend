@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { login, logout, register } from "../controllers/auth";
+import { login, logout, me, register } from "../controllers/auth";
 
 const router = Router();
 
@@ -14,6 +14,6 @@ router.post("/login", login);
 router.post("/logout", logout);
 
 // /api/auth/me
-router.get("/me");
+router.get("/me", me);
 
 export default router;

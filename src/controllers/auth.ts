@@ -156,3 +156,42 @@ export const logout = async (req: Request, res: Response): Promise<any> => {
     });
   }
 };
+
+/**
+ * @route GET /api/auth/me
+ * @desc Выход из системы
+ * @access Public
+ */
+export const me = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const token = req.cookies[COOKIE_NAME];
+
+    if (!token) {
+      return res.status(401).json({ message: "Вы не авторизованы" });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        avatarURL: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: "Пользователь не найден" });
+    }
+
+    return res.status(200).json(user);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Что-то пошло не так",
+    });
+  }
+};
