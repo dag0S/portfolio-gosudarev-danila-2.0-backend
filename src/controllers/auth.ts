@@ -159,8 +159,8 @@ export const logout = async (req: Request, res: Response): Promise<any> => {
 
 /**
  * @route GET /api/auth/me
- * @desc Выход из системы
- * @access Public
+ * @desc Получение данных о пользователе с помощью токена
+ * @access Private
  */
 export const me = async (req: Request, res: Response): Promise<any> => {
   try {

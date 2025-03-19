@@ -1,10 +1,10 @@
 import { Role } from "@prisma/client";
 
-export interface CreateUserDto {
+export interface EditUserDto {
   firstName: string;
   lastName: string;
   avatarURL?: string;
   email: string;
-  password: string;
+  newPassword?: string;
   role: Role;
 }

@@ -1,6 +1,7 @@
 import { Router } from "express";
 
 import { login, logout, me, register } from "../controllers/auth";
+import { isAuthenticated } from "../middlewares/isAuthenticated";
 
 const router = Router();
 
@@ -14,6 +15,6 @@ router.post("/login", login);
 router.post("/logout", logout);
 
 // /api/auth/me
-router.get("/me", me);
+router.get("/me", isAuthenticated, me);
 
 export default router;
