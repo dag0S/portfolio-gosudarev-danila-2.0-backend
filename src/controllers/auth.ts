@@ -36,7 +36,7 @@ export const register = async (
 
     if (registeredUser) {
       return res.status(400).json({
-        message: "Пользователь, с таким email уже существует",
+        message: "Пользователь с таким email уже существует",
       });
     }
 

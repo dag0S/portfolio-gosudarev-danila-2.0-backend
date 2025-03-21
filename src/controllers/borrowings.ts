@@ -128,6 +128,44 @@ export const borrowABook = async (
 };
 
 /**
+ * @route PUT /api/borrowings/:id
+ * @desc Вернуть книгу
+ * @access Private
+ */
+export const returnBook = async (
+  req: Request<{ id: string }>,
+  res: Response
+): Promise<any> => {
+  try {
+    const { id } = req.params;
+
+    const deletedBorrowing = await prisma.borrowing.update({
+      where: { id },
+      data: {
+        returnedAt: new Date(),
+      },
+    });
+
+    await prisma.book.update({
+      where: {
+        id: deletedBorrowing.bookId,
+      },
+      data: {
+        copies: {
+          increment: 1,
+        },
+      },
+    });
+
+    return res.status(200).json({ message: "Вы успешно вернули книгу" });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Не удалось вернуть книги",
+    });
+  }
+};
+
+/**
  * @route DELETE /api/borrowings/:id
  * @desc Удалить аренду книги
  * @access Private

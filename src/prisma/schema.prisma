@@ -26,11 +26,30 @@ model Book {
   title        String
   description  String
   bookCoverURL String?
-  author       String
+  authorId     String
+  author       Author      @relation(fields: [authorId], references: [id])
   copies       Int
   borrowing    Borrowing[]
+  genres       Genre[]
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+}
+
+model Author {
+  id        String   @id @default(uuid())
+  name      String
+  Book      Book[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Genre {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  bookId    String?
+  books     Book[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Borrowing {
@@ -45,15 +64,23 @@ model Borrowing {
 }
 
 model Log {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  action    String
-  createdAt DateTime @default(now())
+  id         String      @id @default(uuid())
+  user       User        @relation(fields: [userId], references: [id])
+  userId     String
+  action     String
+  methodHTTP MethodsHTTP
+  createdAt  DateTime    @default(now())
 }
 
 enum Role {
   ADMIN
   LIBRARIAN
   READER
+}
+
+enum MethodsHTTP {
+  GET
+  POST
+  PUT
+  DELETE
 }

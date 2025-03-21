@@ -62,9 +62,9 @@ export const create = async (
   res: Response
 ): Promise<any> => {
   try {
-    const { author, copies, description, title, bookCoverURL } = req.body;
+    const { copies, description, title, bookCoverURL, authorId } = req.body;
 
-    if (!author || !copies || !description || !title) {
+    if (!copies || !description || !title || !authorId) {
       return res.status(400).json({
         message: "Заполните обязательные поля",
       });
@@ -73,10 +73,10 @@ export const create = async (
     const book = await prisma.book.create({
       data: {
         title,
-        author,
         copies,
         description,
         bookCoverURL,
+        authorId,
       },
     });
 
@@ -98,10 +98,10 @@ export const edit = async (
   res: Response
 ): Promise<any> => {
   try {
-    const { author, copies, description, title, bookCoverURL } = req.body;
+    const { authorId, copies, description, title, bookCoverURL } = req.body;
     const { id } = req.params;
 
-    if (!author || !copies || !description || !title) {
+    if (!authorId || !copies || !description || !title) {
       return res.status(400).json({
         message: "Заполните обязательные поля",
       });
@@ -113,7 +113,7 @@ export const edit = async (
       },
       data: {
         title,
-        author,
+        authorId,
         copies,
         description,
         bookCoverURL,

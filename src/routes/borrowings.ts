@@ -7,6 +7,7 @@ import {
   getBorrowingById,
   getBorrowings,
   removeBorrowing,
+  returnBook,
 } from "../controllers/borrowings";
 
 const router = Router();
@@ -30,8 +31,8 @@ router.get(
 // /api/borrowings
 router.post("/", isAuthenticated, checkRole(["READER"]), borrowABook);
 
-// /api/borrowings/:id/return
-router.put("/:id/return");
+// /api/borrowings/:id
+router.put("/:id", isAuthenticated, checkRole(["READER"]), returnBook);
 
 // /api/borrowings/:id
 router.delete("/:id", isAuthenticated, checkRole(["ADMIN"]), removeBorrowing);
