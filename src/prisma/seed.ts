@@ -14,21 +14,21 @@ async function up() {
         email: "reader@mail.ru",
         firstName: "Reader",
         lastName: "Reader",
-        password: await bcrypt.hash("123123", salt),
+        password: await bcrypt.hash("12345rR!", salt),
         role: Role.READER,
       },
       {
         email: "librarian@mail.ru",
         firstName: "Librarian",
         lastName: "Librarian",
-        password: await bcrypt.hash("123123", salt),
+        password: await bcrypt.hash("12345rR!", salt),
         role: Role.LIBRARIAN,
       },
       {
         email: "admin@mail.ru",
         firstName: "Admin",
         lastName: "Admin",
-        password: await bcrypt.hash("123123", salt),
+        password: await bcrypt.hash("12345rR!", salt),
         role: Role.ADMIN,
       },
     ],
@@ -77,6 +77,7 @@ async function up() {
       genres: ["Чистый код и рефакторинг"],
       description: "Описание",
       copies: 10,
+      bookCoverURL: "/imgs/books/book-1.webp",
     },
     {
       title: "Чистая архитектура",
@@ -84,6 +85,7 @@ async function up() {
       genres: ["Архитектура программных систем"],
       description: "Описание",
       copies: 10,
+      bookCoverURL: "/imgs/books/book-1.webp",
     },
     {
       title: "Рефакторинг",
@@ -91,6 +93,7 @@ async function up() {
       genres: ["Чистый код и рефакторинг"],
       description: "Описание",
       copies: 10,
+      bookCoverURL: "/imgs/books/book-1.webp",
     },
     {
       title: "DDD: проектирование сложных программных систем",
@@ -98,6 +101,7 @@ async function up() {
       genres: ["Архитектура программных систем"],
       description: "Описание",
       copies: 10,
+      bookCoverURL: "/imgs/books/book-1.webp",
     },
     {
       title: "TDD на практике",
@@ -105,6 +109,7 @@ async function up() {
       genres: ["Тестирование и TDD"],
       description: "Описание",
       copies: 10,
+      bookCoverURL: "/imgs/books/book-1.webp",
     },
     {
       title: "Микросервисная архитектура",
@@ -112,6 +117,7 @@ async function up() {
       genres: ["Микросервисная архитектура", "DevOps и автоматизация"],
       description: "Описание",
       copies: 10,
+      bookCoverURL: "/imgs/books/book-1.webp",
     },
     {
       title: "JavaScript. Подробное руководство",
@@ -119,6 +125,7 @@ async function up() {
       genres: ["Языки программирования"],
       description: "Описание",
       copies: 10,
+      bookCoverURL: "/imgs/books/book-1.webp",
     },
     {
       title: "Грокаем алгоритмы",
@@ -126,6 +133,7 @@ async function up() {
       genres: ["Алгоритмы и структуры данных"],
       description: "Описание",
       copies: 10,
+      bookCoverURL: "/imgs/books/book-1.webp",
     },
     {
       title: "Кибербезопасность для разработчиков",
@@ -133,6 +141,7 @@ async function up() {
       genres: ["Кибербезопасность"],
       description: "Описание",
       copies: 10,
+      bookCoverURL: "/imgs/books/book-1.webp",
     },
     {
       title: "Менеджмент в IT",
@@ -140,6 +149,7 @@ async function up() {
       genres: ["Менеджмент в IT"],
       description: "Описание",
       copies: 10,
+      bookCoverURL: "/imgs/books/book-1.webp",
     },
   ];
 
@@ -161,6 +171,7 @@ async function up() {
         genres: { connect: genresToConnect },
         description: book.description,
         copies: book.copies,
+        bookCoverURL: book.bookCoverURL,
       },
     });
   }

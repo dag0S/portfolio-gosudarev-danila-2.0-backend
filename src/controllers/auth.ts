@@ -65,6 +65,7 @@ export const register = async (
 
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
+      sameSite: "strict",
       maxAge: 15 * 60 * 1000,
     });
 
@@ -122,6 +123,7 @@ export const login = async (
 
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
+      sameSite: "strict",
       maxAge: 15 * 60 * 1000,
     });
 

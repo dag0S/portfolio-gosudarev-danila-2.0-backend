@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
+import { v4 as uuidV4 } from "uuid";
 
 import { prisma } from "../prisma/prisma-client";
 import { CreateBookDto } from "../dtos/CreateBook.dto";
+import { getYandexDiskFileUrl, uploadToYandexDisk } from "../api/yandexDiskApi";
 
 /**
  * @route GET /api/books
@@ -62,7 +64,8 @@ export const create = async (
   res: Response
 ): Promise<any> => {
   try {
-    const { copies, description, title, bookCoverURL, authorId } = req.body;
+    const { copies, description, title, authorId } = req.body;
+    let bookCoverURL = null;
 
     if (!copies || !description || !title || !authorId) {
       return res.status(400).json({
@@ -70,13 +73,21 @@ export const create = async (
       });
     }
 
+    if (req.file) {
+      const { buffer, originalname, mimetype } = req.file;
+      const uploadPath = `lib_space/books/${uuidV4()}_${originalname}`;
+
+      await uploadToYandexDisk(uploadPath, buffer, mimetype);
+      bookCoverURL = await getYandexDiskFileUrl(uploadPath);
+    }
+
     const book = await prisma.book.create({
       data: {
         title,
-        copies,
+        copies: +copies,
         description,
-        bookCoverURL,
         authorId,
+        bookCoverURL,
       },
     });
 
@@ -98,7 +109,7 @@ export const edit = async (
   res: Response
 ): Promise<any> => {
   try {
-    const { authorId, copies, description, title, bookCoverURL } = req.body;
+    const { authorId, copies, description, title } = req.body;
     const { id } = req.params;
 
     if (!authorId || !copies || !description || !title) {
@@ -116,7 +127,6 @@ export const edit = async (
         authorId,
         copies,
         description,
-        bookCoverURL,
       },
     });
 

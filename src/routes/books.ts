@@ -1,8 +1,12 @@
 import { Router } from "express";
+import multer from "multer";
 
 import { create, edit, getAll, getOne, remove } from "../controllers/books";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 import { checkRole } from "../middlewares/checkRole";
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 const router = Router();
 
@@ -13,7 +17,13 @@ router.get("/", getAll);
 router.get("/:id", getOne);
 
 // /api/books
-router.post("/", isAuthenticated, checkRole(["ADMIN", "LIBRARIAN"]), create);
+router.post(
+  "/",
+  upload.single("bookCoverURL"),
+  isAuthenticated,
+  checkRole(["ADMIN", "LIBRARIAN"]),
+  create
+);
 
 // /api/books/:id
 router.put("/:id", isAuthenticated, checkRole(["ADMIN", "LIBRARIAN"]), edit);

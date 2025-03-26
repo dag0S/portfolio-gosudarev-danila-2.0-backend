@@ -3,5 +3,4 @@ export interface CreateBookDto {
   description: string;
   copies: number;
   authorId: string;
-  bookCoverURL?: string;
 }
