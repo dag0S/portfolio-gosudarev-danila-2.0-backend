@@ -29,6 +29,7 @@ model Book {
   authorId     String
   author       Author      @relation(fields: [authorId], references: [id])
   copies       Int
+  views        Int
   borrowing    Borrowing[]
   genres       Genre[]
   createdAt    DateTime    @default(now())
