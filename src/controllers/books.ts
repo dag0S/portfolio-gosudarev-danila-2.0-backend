@@ -3,7 +3,11 @@ import { v4 as uuidV4 } from "uuid";
 
 import { prisma } from "../prisma/prisma-client";
 import { CreateBookDto } from "../dtos/CreateBook.dto";
-import { getYandexDiskFileUrl, uploadToYandexDisk } from "../api/yandexDiskApi";
+import {
+  getYandexDiskFileUrl,
+  uploadToYandexDisk,
+  yandexDiskApi,
+} from "../api/yandexDiskApi";
 
 /**
  * @route GET /api/books
@@ -149,6 +153,22 @@ export const remove = async (
 ): Promise<any> => {
   try {
     const { id } = req.params;
+
+    const book = await prisma.book.findUnique({
+      where: { id },
+    });
+
+    if (!book) {
+      return res.status(404).json({ message: "Книга не найдена" });
+    }
+
+    if (book.bookCoverURL) {
+      const filename = new URL(book.bookCoverURL).searchParams.get("filename");
+
+      await yandexDiskApi.delete(
+        `/v1/disk/resources?path=/lib_space/books/${filename}`
+      );
+    }
 
     await prisma.book.delete({
       where: {
