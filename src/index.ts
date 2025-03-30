@@ -3,6 +3,7 @@ import logger from "morgan";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import path from "path";
 
 import router from "./routes";
 
@@ -12,6 +13,7 @@ const app = express();
 const port = process.env.PORT || 4321;
 
 app.use(logger("dev"));
+app.use(express.static(path.resolve(__dirname, "static/books/")));
 app.use(
   cors({
     origin: "http://localhost:3000",

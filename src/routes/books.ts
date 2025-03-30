@@ -1,11 +1,20 @@
 import { Router } from "express";
 import multer from "multer";
+import { v4 as uuidV4 } from "uuid";
+import path from 'path'
 
 import { create, edit, getAll, getOne, remove } from "../controllers/books";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 import { checkRole } from "../middlewares/checkRole";
 
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.resolve(__dirname, '..', 'static/books'));
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${uuidV4()}-${file.originalname}`);
+  },
+});
 const upload = multer({ storage });
 
 const router = Router();
@@ -19,9 +28,9 @@ router.get("/:id", getOne);
 // /api/books
 router.post(
   "/",
-  upload.single("bookCoverURL"),
   isAuthenticated,
   checkRole(["ADMIN", "LIBRARIAN"]),
+  upload.single("bookCoverURL"),
   create
 );
 

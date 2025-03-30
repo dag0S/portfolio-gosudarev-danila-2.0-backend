@@ -1,13 +1,9 @@
 import { Request, Response } from "express";
-import { v4 as uuidV4 } from "uuid";
+import path from "path";
+import fs from "fs";
 
 import { prisma } from "../prisma/prisma-client";
 import { CreateBookDto } from "../dtos/CreateBook.dto";
-import {
-  getYandexDiskFileUrl,
-  uploadToYandexDisk,
-  yandexDiskApi,
-} from "../api/yandexDiskApi";
 
 /**
  * @route GET /api/books
@@ -41,6 +37,10 @@ export const getOne = async (
     const book = await prisma.book.findUnique({
       where: {
         id,
+      },
+      include: {
+        genres: {},
+        author: {},
       },
     });
 
@@ -78,11 +78,8 @@ export const create = async (
     }
 
     if (req.file) {
-      const { buffer, originalname, mimetype } = req.file;
-      const uploadPath = `lib_space/books/${uuidV4()}_${originalname}`;
-
-      await uploadToYandexDisk(uploadPath, buffer, mimetype);
-      bookCoverURL = await getYandexDiskFileUrl(uploadPath);
+      const { filename } = req.file;
+      bookCoverURL = filename;
     }
 
     const book = await prisma.book.create({
@@ -94,6 +91,10 @@ export const create = async (
         bookCoverURL,
       },
     });
+
+    if (!book) {
+      return res.status(500).json({ message: "Не удалось создать книгу" });
+    }
 
     return res.status(201).json(book);
   } catch (error) {
@@ -163,11 +164,20 @@ export const remove = async (
     }
 
     if (book.bookCoverURL) {
-      const filename = new URL(book.bookCoverURL).searchParams.get("filename");
-
-      await yandexDiskApi.delete(
-        `/v1/disk/resources?path=/lib_space/books/${filename}`
+      const filePath = path.join(
+        __dirname,
+        `../static/books/${book.bookCoverURL}`
       );
+
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ message: "Файл не найден" });
+      }
+
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          return res.status(500).json({ message: "Ошибка удаления файла" });
+        }
+      });
     }
 
     await prisma.book.delete({
