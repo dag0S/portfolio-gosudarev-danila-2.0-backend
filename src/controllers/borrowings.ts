@@ -28,28 +28,38 @@ export const getBorrowings = async (
 };
 
 /**
- * @route GET /api/borrowings/:id
- * @desc Получение книги взятой в аренду по id
+ * @route GET /api/borrowings/:userId
+ * @desc Получение книг взятых в аренду конкретным пользователем по userId
  * @access Private
  */
-export const getBorrowingById = async (
-  req: Request<{ id: string }>,
+export const getBorrowingByUserId = async (
+  req: Request<{ userId: string }>,
   res: Response
 ): Promise<any> => {
   try {
-    const { id } = req.params;
+    const { userId } = req.params;
 
-    const borrowing = await prisma.borrowing.findUnique({
-      where: { id },
+    // @ts-ignore
+    if (userId !== req.user.id) {
+      throw new Error();
+    }
+
+    const borrowings = await prisma.borrowing.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        book: {},
+      },
     });
 
-    if (!borrowing) {
+    if (!borrowings) {
       return res.status(500).json({
         message: "Аренды не существует",
       });
     }
 
-    return res.status(200).json(borrowing);
+    return res.status(200).json(borrowings);
   } catch (error) {
     return res.status(500).json({
       message: "Не удалось получить список книг взятых в аренду",
@@ -75,6 +85,20 @@ export const borrowABook = async (
       });
     }
 
+    const existingBorrow = await prisma.borrowing.findFirst({
+      where: {
+        bookId,
+        userId,
+        returnedAt: null,
+      },
+    });
+
+    if (existingBorrow) {
+      return res.status(409).json({
+        message: "Вы уже взяли эту книгу в аренду",
+      });
+    }
+
     const book = await prisma.book.findUnique({
       where: {
         id: bookId,
@@ -89,7 +113,7 @@ export const borrowABook = async (
       throw new Error();
     }
 
-    if (book.copies === 0) {
+    if (book.copies <= 0) {
       return res.status(500).json({
         message:
           "Невозможно взять книгу в аренду, так как все копии книги закочились",
@@ -196,6 +220,38 @@ export const removeBorrowing = async (
   } catch (error) {
     return res.status(500).json({
       message: "Не удалось удалить аренду книги",
+    });
+  }
+};
+
+/**
+ * @route GET /api/borrowings/check?bookId=XXX&userId=YYY
+ * @desc Проверка: взята ли конкретная книга у пользователя
+ * @access Private
+ */
+export const checkUserBookStatus = async (
+  req: Request<{}, {}, {}, { bookId: string; userId: string }>,
+  res: Response
+): Promise<any> => {
+  try {
+    const { bookId, userId } = req.query;
+
+    if (!bookId || !userId) {
+      return res.status(400).json({ message: "bookId и userId обязательны" });
+    }
+
+    const existing = await prisma.borrowing.findFirst({
+      where: {
+        bookId,
+        userId,
+        returnedAt: null,
+      },
+    });
+
+    return res.status(200).json({ hasBorrowed: !!existing });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Не удалось проверить взята ли в аренду книга у пользователя",
     });
   }
 };

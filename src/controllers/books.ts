@@ -50,7 +50,22 @@ export const getOne = async (
       });
     }
 
-    return res.status(200).json(book);
+    const updatedBook = await prisma.book.update({
+      where: {
+        id,
+      },
+      data: {
+        views: {
+          increment: 1,
+        },
+      },
+      include: {
+        genres: {},
+        author: {},
+      },
+    });
+
+    return res.status(200).json(updatedBook);
   } catch (error) {
     return res.status(500).json({
       message: "Не удалось получить книгу",
