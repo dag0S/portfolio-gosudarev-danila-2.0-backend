@@ -135,7 +135,7 @@ export const borrowABook = async (
       data: {
         bookId,
         userId,
-        dueDate: new Date(),
+        dueDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
       },
     });
 

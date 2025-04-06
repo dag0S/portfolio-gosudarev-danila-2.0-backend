@@ -4,15 +4,43 @@ import fs from "fs";
 
 import { prisma } from "../prisma/prisma-client";
 import { CreateBookDto } from "../dtos/CreateBook.dto";
+import { IBookQueryParams } from "../types/types";
 
 /**
  * @route GET /api/books
  * @desc Получение всех книг
  * @access Public
  */
-export const getAll = async (req: Request, res: Response): Promise<any> => {
+export const getAll = async (
+  req: Request<{}, {}, {}, IBookQueryParams>,
+  res: Response
+): Promise<any> => {
   try {
-    const books = await prisma.book.findMany();
+    const { searchBy } = req.query;
+
+    const booksWhere: any = {};
+    // const booksOrderBy: any = {};
+
+    if (searchBy) {
+      booksWhere["OR"] = [
+        {
+          title: {
+            contains: searchBy,
+            mode: "insensitive",
+          },
+        },
+        {
+          description: {
+            contains: searchBy,
+            mode: "insensitive",
+          },
+        },
+      ];
+    }
+
+    const books = await prisma.book.findMany({
+      where: booksWhere,
+    });
 
     return res.status(200).json(books);
   } catch (error) {
