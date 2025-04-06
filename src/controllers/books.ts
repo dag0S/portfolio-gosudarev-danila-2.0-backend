@@ -16,7 +16,10 @@ export const getAll = async (
   res: Response
 ): Promise<any> => {
   try {
-    const { searchBy, sortBy } = req.query;
+    const { searchBy, sortBy, authors, genres } = req.query;
+
+    const genresIdArr = genres?.split(",");
+    const authorsIdArr = authors?.split(",");
 
     const booksWhere: any = {};
     const booksOrderBy: any = {};
@@ -40,6 +43,26 @@ export const getAll = async (
           },
         },
       ];
+    }
+
+    if (genres) {
+      booksWhere["genres"] = genresIdArr
+        ? {
+            some: {
+              id: {
+                in: genresIdArr,
+              },
+            },
+          }
+        : undefined;
+    }
+
+    if (authors) {
+      booksWhere["authorId"] = authorsIdArr
+        ? {
+            in: authorsIdArr,
+          }
+        : undefined;
     }
 
     const books = await prisma.book.findMany({
