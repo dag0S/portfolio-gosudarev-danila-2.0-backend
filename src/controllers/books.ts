@@ -16,10 +16,14 @@ export const getAll = async (
   res: Response
 ): Promise<any> => {
   try {
-    const { searchBy } = req.query;
+    const { searchBy, sortBy } = req.query;
 
     const booksWhere: any = {};
-    // const booksOrderBy: any = {};
+    const booksOrderBy: any = {};
+
+    if (sortBy) {
+      booksOrderBy[sortBy] = "desc";
+    }
 
     if (searchBy) {
       booksWhere["OR"] = [
@@ -40,6 +44,7 @@ export const getAll = async (
 
     const books = await prisma.book.findMany({
       where: booksWhere,
+      orderBy: booksOrderBy,
     });
 
     return res.status(200).json(books);
