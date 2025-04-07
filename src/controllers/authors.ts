@@ -9,7 +9,11 @@ import { prisma } from "../prisma/prisma-client";
  */
 export const getAuthors = async (req: Request, res: Response): Promise<any> => {
   try {
-    const authors = await prisma.author.findMany();
+    const authors = await prisma.author.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    });
 
     if (!authors) {
       throw new Error();

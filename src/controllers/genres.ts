@@ -9,7 +9,11 @@ import { prisma } from "../prisma/prisma-client";
  */
 export const getGenres = async (req: Request, res: Response): Promise<any> => {
   try {
-    const genres = await prisma.genre.findMany();
+    const genres = await prisma.genre.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    });
 
     if (!genres) {
       throw new Error();
