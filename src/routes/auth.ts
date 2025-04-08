@@ -12,7 +12,7 @@ router.post("/register", register);
 router.post("/login", login);
 
 // /api/auth/logout
-router.post("/logout", logout);
+router.post("/logout", isAuthenticated, logout);
 
 // /api/auth/me
 router.get("/me", isAuthenticated, me);

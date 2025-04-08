@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import { prisma } from "../prisma/prisma-client";
+import { logAction } from "../utils/logAction";
 
 /**
  * @route GET /api/logs
@@ -9,11 +10,19 @@ import { prisma } from "../prisma/prisma-client";
  */
 export const getLogs = async (req: Request, res: Response): Promise<any> => {
   try {
-    const logs = await prisma.log.findMany();
+    // @ts-ignore
+    const userId = req.user.id;
+    const logs = await prisma.log.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
     if (!logs) {
       throw new Error();
     }
+
+    await logAction(userId, "Получение всех логов", "GET");
 
     return res.status(200).json(logs);
   } catch (error) {
@@ -33,6 +42,8 @@ export const getLogsById = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { id } = req.params;
 
     const logs = await prisma.log.findMany({
@@ -44,6 +55,8 @@ export const getLogsById = async (
     if (!logs) {
       throw new Error();
     }
+
+    await logAction(userId, "Получение логов конкретного пользователя", "GET");
 
     return res.status(200).json(logs);
   } catch (error) {
@@ -63,6 +76,8 @@ export const removeLog = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { id } = req.params;
 
     await prisma.log.delete({
@@ -70,6 +85,8 @@ export const removeLog = async (
         id,
       },
     });
+
+    await logAction(userId, "Удаление конкретного лога", "DELETE");
 
     return res.status(200).json({ message: "Log успешно удален" });
   } catch (error) {

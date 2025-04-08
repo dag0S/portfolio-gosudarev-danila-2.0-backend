@@ -8,6 +8,7 @@ import { prisma } from "../prisma/prisma-client";
 import { LoginAuthDto } from "../dtos/LoginAuth.dto";
 import { JWT_ACCESS_TOKEN, JWT_REFRESH_TOKEN } from "../const/cookieName";
 import { generateTokens } from "../utils/generateTokens";
+import { logAction } from "../utils/logAction";
 
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as string;
@@ -60,6 +61,8 @@ export const register = async (
         message: "Не удалось создать пользователя",
       });
     }
+
+    await logAction(user.id, "Регистрация нового пользователя", "POST");
 
     const { accessToken, refreshToken } = generateTokens(user);
 
@@ -116,6 +119,8 @@ export const login = async (
       });
     }
 
+    await logAction(user.id, "Вход в аккаунт", "POST");
+
     const { accessToken, refreshToken } = generateTokens(user);
 
     res.cookie(JWT_ACCESS_TOKEN, accessToken, {
@@ -148,6 +153,10 @@ export const login = async (
  */
 export const logout = async (req: Request, res: Response): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
+    await logAction(userId, "Выход из аккаунта", "POST");
+
     res.clearCookie(JWT_ACCESS_TOKEN);
     res.clearCookie(JWT_REFRESH_TOKEN);
 
@@ -225,6 +234,8 @@ export const refresh = async (req: Request, res: Response): Promise<any> => {
     if (!user) {
       return res.status(403).json({ message: "Пользователь не найден" });
     }
+
+    await logAction(user.id, "Обновление токена доступа", "POST");
 
     const { accessToken } = generateTokens(user);
 

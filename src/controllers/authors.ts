@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import { prisma } from "../prisma/prisma-client";
+import { logAction } from "../utils/logAction";
 
 /**
  * @route GET /api/authors
@@ -37,6 +38,8 @@ export const createAuthor = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { name } = req.body;
 
     if (!name) {
@@ -54,6 +57,8 @@ export const createAuthor = async (
     if (!author) {
       throw new Error();
     }
+
+    await logAction(userId, `Добавление автора: ${author.name}`, "POST");
 
     return res.status(200).json({ message: "Автор успешно создан" });
   } catch (error) {
@@ -73,6 +78,8 @@ export const editAuthor = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { id } = req.params;
     const { name } = req.body;
 
@@ -82,7 +89,7 @@ export const editAuthor = async (
       });
     }
 
-    await prisma.author.update({
+    const updatedAuthor = await prisma.author.update({
       where: {
         id,
       },
@@ -90,6 +97,12 @@ export const editAuthor = async (
         name,
       },
     });
+
+    await logAction(
+      userId,
+      `Редактирование автора: ${updatedAuthor.name}`,
+      "PUT"
+    );
 
     return res.status(200).json({ message: "Автор успешно отредактирован" });
   } catch (error) {
@@ -109,13 +122,17 @@ export const removeAuthor = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { id } = req.params;
 
-    await prisma.author.delete({
+    const deletedAuthor = await prisma.author.delete({
       where: {
         id,
       },
     });
+
+    await logAction(userId, `Удаление автора: ${deletedAuthor.name}`, "DELETE");
 
     return res.status(200).json({ message: "Автор успешно удален" });
   } catch (error) {

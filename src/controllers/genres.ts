@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import { prisma } from "../prisma/prisma-client";
+import { logAction } from "../utils/logAction";
 
 /**
  * @route GET /api/genres
@@ -37,6 +38,8 @@ export const createGenre = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { name } = req.body;
 
     if (!name) {
@@ -67,6 +70,8 @@ export const createGenre = async (
       throw new Error();
     }
 
+    await logAction(userId, `Добавление жанра: ${genre.name}`, "POST");
+
     return res.status(200).json({ message: "Жанр успешно создан" });
   } catch (error) {
     return res.status(500).json({
@@ -85,6 +90,8 @@ export const editGenre = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { id } = req.params;
     const { name } = req.body;
 
@@ -94,7 +101,7 @@ export const editGenre = async (
       });
     }
 
-    await prisma.genre.update({
+    const updatedGenre = await prisma.genre.update({
       where: {
         id,
       },
@@ -102,6 +109,12 @@ export const editGenre = async (
         name,
       },
     });
+
+    await logAction(
+      userId,
+      `Редактирование жанра: ${updatedGenre.name}`,
+      "PUT"
+    );
 
     return res.status(200).json({ message: "Жанр успешно отредактирован" });
   } catch (error) {
@@ -121,13 +134,17 @@ export const removeGenre = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { id } = req.params;
 
-    await prisma.genre.delete({
+    const deletedGenre = await prisma.genre.delete({
       where: {
         id,
       },
     });
+
+    await logAction(userId, `Удаление жанра: ${deletedGenre.name}`, "DELETE");
 
     return res.status(200).json({ message: "Жанр успешно удален" });
   } catch (error) {

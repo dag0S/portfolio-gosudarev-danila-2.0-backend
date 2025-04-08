@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 
 import { prisma } from "../prisma/prisma-client";
 import { BorrowABookDto } from "../dtos/BorrowABook.dto";
+import { logAction } from "../utils/logAction";
 
 /**
  * @route GET /api/borrowings
@@ -47,6 +48,7 @@ export const getBorrowingByUserId = async (
     const borrowings = await prisma.borrowing.findMany({
       where: {
         userId,
+        returnedAt: null,
       },
       include: {
         book: {},
@@ -58,6 +60,8 @@ export const getBorrowingByUserId = async (
         message: "Аренды не существует",
       });
     }
+
+    await logAction(userId, "Получение списка книг, взятых в аренду", "GET");
 
     return res.status(200).json(borrowings);
   } catch (error) {
@@ -106,6 +110,7 @@ export const borrowABook = async (
       select: {
         id: true,
         copies: true,
+        title: true,
       },
     });
 
@@ -143,6 +148,8 @@ export const borrowABook = async (
       throw new Error();
     }
 
+    await logAction(userId, `Взятие в аренду книги: ${book.title}`, "POST");
+
     return res.status(200).json({ message: "Книга взята в аренду" });
   } catch (error) {
     return res.status(500).json({
@@ -161,6 +168,8 @@ export const returnBook = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { id } = req.params;
 
     const deletedBorrowing = await prisma.borrowing.update({
@@ -170,7 +179,7 @@ export const returnBook = async (
       },
     });
 
-    await prisma.book.update({
+    const book = await prisma.book.update({
       where: {
         id: deletedBorrowing.bookId,
       },
@@ -180,6 +189,12 @@ export const returnBook = async (
         },
       },
     });
+
+    await logAction(
+      userId,
+      `Возврат книги, взятой в аренду: ${book.title}`,
+      "PUT"
+    );
 
     return res.status(200).json({ message: "Вы успешно вернули книгу" });
   } catch (error) {
@@ -199,13 +214,15 @@ export const removeBorrowing = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { id } = req.params;
 
     const deletedBorrowing = await prisma.borrowing.delete({
       where: { id },
     });
 
-    await prisma.book.update({
+    const book = await prisma.book.update({
       where: {
         id: deletedBorrowing.bookId,
       },
@@ -215,6 +232,8 @@ export const removeBorrowing = async (
         },
       },
     });
+
+    await logAction(userId, `Удаление аренды книги: ${book.title}`, "DELETE");
 
     return res.status(200).json({ message: "Аренда книги успешно удалена" });
   } catch (error) {
@@ -248,7 +267,9 @@ export const checkUserBookStatus = async (
       },
     });
 
-    return res.status(200).json({ hasBorrowed: !!existing });
+    return res
+      .status(200)
+      .json({ hasBorrowed: !!existing, borrowingId: existing?.id });
   } catch (error) {
     return res.status(500).json({
       message: "Не удалось проверить взята ли в аренду книга у пользователя",

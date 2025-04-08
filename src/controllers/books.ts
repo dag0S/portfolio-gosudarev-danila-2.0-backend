@@ -5,6 +5,7 @@ import fs from "fs";
 import { prisma } from "../prisma/prisma-client";
 import { CreateBookDto } from "../dtos/CreateBook.dto";
 import { IBookQueryParams } from "../types/types";
+import { logAction } from "../utils/logAction";
 
 /**
  * @route GET /api/books
@@ -26,6 +27,8 @@ export const getAll = async (
 
     if (sortBy) {
       booksOrderBy[sortBy] = "desc";
+    } else {
+      booksOrderBy["views"] = "desc";
     }
 
     if (searchBy) {
@@ -139,6 +142,8 @@ export const create = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { copies, description, title, authorId } = req.body;
     let bookCoverURL = null;
 
@@ -167,6 +172,8 @@ export const create = async (
       return res.status(500).json({ message: "Не удалось создать книгу" });
     }
 
+    await logAction(userId, `Добавление книги: ${book.title}`, "POST");
+
     return res.status(201).json(book);
   } catch (error) {
     return res.status(500).json({
@@ -185,6 +192,8 @@ export const edit = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { authorId, copies, description, title } = req.body;
     const { id } = req.params;
 
@@ -194,7 +203,7 @@ export const edit = async (
       });
     }
 
-    await prisma.book.update({
+    const updatedBook = await prisma.book.update({
       where: {
         id,
       },
@@ -205,6 +214,12 @@ export const edit = async (
         description,
       },
     });
+
+    await logAction(
+      userId,
+      `Редактирование книги: ${updatedBook.title}`,
+      "PUT"
+    );
 
     return res.status(204).json({ message: "Книгу успешно отредактирована" });
   } catch (error) {
@@ -224,6 +239,8 @@ export const remove = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { id } = req.params;
 
     const book = await prisma.book.findUnique({
@@ -251,11 +268,13 @@ export const remove = async (
       });
     }
 
-    await prisma.book.delete({
+    const deletedBook = await prisma.book.delete({
       where: {
         id,
       },
     });
+
+    await logAction(userId, `Удаление книги: ${deletedBook.title}`, "DELETE");
 
     return res.status(204).json({ message: "Книгу успешно удалена" });
   } catch (error) {

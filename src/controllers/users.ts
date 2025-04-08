@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { CreateUserDto } from "../dtos/CreateUser.dto";
 import { prisma } from "../prisma/prisma-client";
 import { EditUserDto } from "../dtos/EditUser.dto";
+import { logAction } from "../utils/logAction";
 
 /**
  * @route GET /api/users
@@ -12,6 +13,9 @@ import { EditUserDto } from "../dtos/EditUser.dto";
  */
 export const getUsers = async (req: Request, res: Response): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
+
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -28,6 +32,8 @@ export const getUsers = async (req: Request, res: Response): Promise<any> => {
     if (!users) {
       throw new Error();
     }
+
+    await logAction(userId, "Получение списка пользователей", "GET");
 
     return res.status(200).json(users);
   } catch (error) {
@@ -47,6 +53,8 @@ export const getUserById = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { id } = req.params;
 
     const user = await prisma.user.findUnique({
@@ -71,6 +79,12 @@ export const getUserById = async (
       });
     }
 
+    await logAction(
+      userId,
+      "Получение данных о конкретном пользователе",
+      "GET"
+    );
+
     return res.status(200).json(user);
   } catch (error) {
     return res.status(500).json({
@@ -89,6 +103,8 @@ export const createUser = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { email, firstName, lastName, password, role, avatarURL } = req.body;
 
     if (!email || !firstName || !lastName || !password || !role) {
@@ -129,6 +145,8 @@ export const createUser = async (
       });
     }
 
+    await logAction(userId, "Создание нового пользователя", "POST");
+
     return res.status(201).json({
       id: user.id,
       firstName: user.firstName,
@@ -154,6 +172,8 @@ export const editUser = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { email, firstName, lastName, newPassword, role, avatarURL } =
       req.body;
     const { id } = req.params;
@@ -196,6 +216,8 @@ export const editUser = async (
       });
     }
 
+    await logAction(userId, "Редактирование данных пользователя", "PUT");
+
     return res
       .status(204)
       .json({ message: "Пользователь успешно отредактирована" });
@@ -216,6 +238,8 @@ export const deleteUser = async (
   res: Response
 ): Promise<any> => {
   try {
+    // @ts-ignore
+    const userId = req.user.id;
     const { id } = req.params;
 
     await prisma.user.delete({
@@ -223,6 +247,8 @@ export const deleteUser = async (
         id,
       },
     });
+
+    await logAction(userId, "Удаление пользователя", "DELETE");
 
     return res.status(204).json({ message: "Пользователь успешно удалена" });
   } catch (error) {
