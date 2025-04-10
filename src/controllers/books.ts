@@ -82,6 +82,35 @@ export const getAll = async (
 };
 
 /**
+ * @route GET /api/books/info
+ * @desc Получение всех книг с полной информацией
+ * @access Private
+ */
+export const getAllInfo = async (req: Request, res: Response): Promise<any> => {
+  try {
+    const books = await prisma.book.findMany({
+      include: {
+        genres: {},
+        author: {},
+      },
+      orderBy: {
+        title: "asc",
+      },
+    });
+
+    if (!books) {
+      throw new Error();
+    }
+
+    return res.status(200).json(books);
+  } catch (error) {
+    return res.status(500).json({
+      message: "Не удалось получить книги с полной информацией",
+    });
+  }
+};
+
+/**
  * @route GET /api/books/:id
  * @desc Получение одной книги по id
  * @access Public
@@ -197,7 +226,7 @@ export const edit = async (
     const { authorId, copies, description, title } = req.body;
     const { id } = req.params;
 
-    if (!authorId || !copies || !description || !title) {
+    if (!authorId || !copies.toString() || !description || !title) {
       return res.status(400).json({
         message: "Заполните обязательные поля",
       });
