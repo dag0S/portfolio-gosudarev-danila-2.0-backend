@@ -27,6 +27,9 @@ export const getUsers = async (req: Request, res: Response): Promise<any> => {
         createdAt: true,
         updatedAt: true,
       },
+      orderBy: {
+        lastName: "asc",
+      },
     });
 
     if (!users) {

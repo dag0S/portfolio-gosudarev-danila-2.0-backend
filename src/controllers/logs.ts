@@ -46,9 +46,22 @@ export const getLogsById = async (
     const userId = req.user.id;
     const { id } = req.params;
 
+    const user = await prisma.user.findUnique({
+      where: {
+        id,
+      },
+    });
+
+    if (!user) {
+      throw new Error();
+    }
+
     const logs = await prisma.log.findMany({
       where: {
         userId: id,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
