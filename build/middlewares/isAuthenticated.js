@@ -15,15 +15,28 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.isAuthenticated = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const cookieName_1 = require("../const/cookieName");
-const JWT_SECRET = process.env.JWT_SECRET;
+const prisma_client_1 = require("../prisma/prisma-client");
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 const isAuthenticated = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const token = req.cookies[cookieName_1.COOKIE_NAME];
-        if (!token) {
+        const accessToken = req.cookies[cookieName_1.JWT_ACCESS_TOKEN];
+        if (!accessToken) {
             return res.status(401).json({ message: "Вы не авторизованы" });
         }
-        const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
-        req.user = decoded;
+        const decoded = jsonwebtoken_1.default.verify(accessToken, JWT_ACCESS_SECRET);
+        const user = yield prisma_client_1.prisma.user.findUnique({
+            where: {
+                id: decoded.id,
+            },
+            select: {
+                id: true,
+                role: true,
+            },
+        });
+        if (!user) {
+            return res.status(401).json({ message: "Пользователь не найден" });
+        }
+        req.user = user;
         next();
     }
     catch (error) {

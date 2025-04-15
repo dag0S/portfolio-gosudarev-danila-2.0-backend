@@ -9,8 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeBorrowing = exports.returnBook = exports.borrowABook = exports.getBorrowingById = exports.getBorrowings = void 0;
+exports.checkUserBookStatus = exports.removeBorrowing = exports.returnBook = exports.borrowABook = exports.getBorrowingByUserId = exports.getBorrowings = void 0;
 const prisma_client_1 = require("../prisma/prisma-client");
+const logAction_1 = require("../utils/logAction");
 /**
  * @route GET /api/borrowings
  * @desc Получение всех книг взятых в аренду
@@ -32,22 +33,33 @@ const getBorrowings = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 });
 exports.getBorrowings = getBorrowings;
 /**
- * @route GET /api/borrowings/:id
- * @desc Получение книги взятой в аренду по id
+ * @route GET /api/borrowings/:userId
+ * @desc Получение книг взятых в аренду конкретным пользователем по userId
  * @access Private
  */
-const getBorrowingById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getBorrowingByUserId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { id } = req.params;
-        const borrowing = yield prisma_client_1.prisma.borrowing.findUnique({
-            where: { id },
+        const { userId } = req.params;
+        // @ts-ignore
+        if (userId !== req.user.id) {
+            throw new Error();
+        }
+        const borrowings = yield prisma_client_1.prisma.borrowing.findMany({
+            where: {
+                userId,
+                returnedAt: null,
+            },
+            include: {
+                book: {},
+            },
         });
-        if (!borrowing) {
+        if (!borrowings) {
             return res.status(500).json({
                 message: "Аренды не существует",
             });
         }
-        return res.status(200).json(borrowing);
+        yield (0, logAction_1.logAction)(userId, "Получение списка книг, взятых в аренду", "GET");
+        return res.status(200).json(borrowings);
     }
     catch (error) {
         return res.status(500).json({
@@ -55,7 +67,7 @@ const getBorrowingById = (req, res) => __awaiter(void 0, void 0, void 0, functio
         });
     }
 });
-exports.getBorrowingById = getBorrowingById;
+exports.getBorrowingByUserId = getBorrowingByUserId;
 /**
  * @route POST /api/borrowings
  * @desc Взять в аренду книгу
@@ -69,6 +81,18 @@ const borrowABook = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 message: "Не достаточно данных, чтобы взять книгу в аренду",
             });
         }
+        const existingBorrow = yield prisma_client_1.prisma.borrowing.findFirst({
+            where: {
+                bookId,
+                userId,
+                returnedAt: null,
+            },
+        });
+        if (existingBorrow) {
+            return res.status(409).json({
+                message: "Вы уже взяли эту книгу в аренду",
+            });
+        }
         const book = yield prisma_client_1.prisma.book.findUnique({
             where: {
                 id: bookId,
@@ -76,12 +100,13 @@ const borrowABook = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             select: {
                 id: true,
                 copies: true,
+                title: true,
             },
         });
         if (!book) {
             throw new Error();
         }
-        if (book.copies === 0) {
+        if (book.copies <= 0) {
             return res.status(500).json({
                 message: "Невозможно взять книгу в аренду, так как все копии книги закочились",
             });
@@ -100,12 +125,13 @@ const borrowABook = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             data: {
                 bookId,
                 userId,
-                dueDate: new Date(),
+                dueDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
             },
         });
         if (!borrowing) {
             throw new Error();
         }
+        yield (0, logAction_1.logAction)(userId, `Взятие в аренду книги: ${book.title}`, "POST");
         return res.status(200).json({ message: "Книга взята в аренду" });
     }
     catch (error) {
@@ -122,6 +148,8 @@ exports.borrowABook = borrowABook;
  */
 const returnBook = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // @ts-ignore
+        const userId = req.user.id;
         const { id } = req.params;
         const deletedBorrowing = yield prisma_client_1.prisma.borrowing.update({
             where: { id },
@@ -129,7 +157,7 @@ const returnBook = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 returnedAt: new Date(),
             },
         });
-        yield prisma_client_1.prisma.book.update({
+        const book = yield prisma_client_1.prisma.book.update({
             where: {
                 id: deletedBorrowing.bookId,
             },
@@ -139,6 +167,7 @@ const returnBook = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 },
             },
         });
+        yield (0, logAction_1.logAction)(userId, `Возврат книги, взятой в аренду: ${book.title}`, "PUT");
         return res.status(200).json({ message: "Вы успешно вернули книгу" });
     }
     catch (error) {
@@ -155,11 +184,13 @@ exports.returnBook = returnBook;
  */
 const removeBorrowing = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // @ts-ignore
+        const userId = req.user.id;
         const { id } = req.params;
         const deletedBorrowing = yield prisma_client_1.prisma.borrowing.delete({
             where: { id },
         });
-        yield prisma_client_1.prisma.book.update({
+        const book = yield prisma_client_1.prisma.book.update({
             where: {
                 id: deletedBorrowing.bookId,
             },
@@ -169,6 +200,7 @@ const removeBorrowing = (req, res) => __awaiter(void 0, void 0, void 0, function
                 },
             },
         });
+        yield (0, logAction_1.logAction)(userId, `Удаление аренды книги: ${book.title}`, "DELETE");
         return res.status(200).json({ message: "Аренда книги успешно удалена" });
     }
     catch (error) {
@@ -178,3 +210,32 @@ const removeBorrowing = (req, res) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.removeBorrowing = removeBorrowing;
+/**
+ * @route GET /api/borrowings/check?bookId=XXX&userId=YYY
+ * @desc Проверка: взята ли конкретная книга у пользователя
+ * @access Private
+ */
+const checkUserBookStatus = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { bookId, userId } = req.query;
+        if (!bookId || !userId) {
+            return res.status(400).json({ message: "bookId и userId обязательны" });
+        }
+        const existing = yield prisma_client_1.prisma.borrowing.findFirst({
+            where: {
+                bookId,
+                userId,
+                returnedAt: null,
+            },
+        });
+        return res
+            .status(200)
+            .json({ hasBorrowed: !!existing, borrowingId: existing === null || existing === void 0 ? void 0 : existing.id });
+    }
+    catch (error) {
+        return res.status(500).json({
+            message: "Не удалось проверить взята ли в аренду книга у пользователя",
+        });
+    }
+});
+exports.checkUserBookStatus = checkUserBookStatus;

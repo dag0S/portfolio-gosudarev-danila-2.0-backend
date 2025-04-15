@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteUser = exports.editUser = exports.createUser = exports.getUserById = exports.getUsers = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const prisma_client_1 = require("../prisma/prisma-client");
+const logAction_1 = require("../utils/logAction");
 /**
  * @route GET /api/users
  * @desc Получение спика пользователей
@@ -22,6 +23,8 @@ const prisma_client_1 = require("../prisma/prisma-client");
  */
 const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // @ts-ignore
+        const userId = req.user.id;
         const users = yield prisma_client_1.prisma.user.findMany({
             select: {
                 id: true,
@@ -33,10 +36,14 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 createdAt: true,
                 updatedAt: true,
             },
+            orderBy: {
+                lastName: "asc",
+            },
         });
         if (!users) {
             throw new Error();
         }
+        yield (0, logAction_1.logAction)(userId, "Получение списка пользователей", "GET");
         return res.status(200).json(users);
     }
     catch (error) {
@@ -53,6 +60,8 @@ exports.getUsers = getUsers;
  */
 const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // @ts-ignore
+        const userId = req.user.id;
         const { id } = req.params;
         const user = yield prisma_client_1.prisma.user.findUnique({
             where: {
@@ -74,6 +83,7 @@ const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 message: "Пользователя не существует",
             });
         }
+        yield (0, logAction_1.logAction)(userId, "Получение данных о конкретном пользователе", "GET");
         return res.status(200).json(user);
     }
     catch (error) {
@@ -90,6 +100,8 @@ exports.getUserById = getUserById;
  */
 const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // @ts-ignore
+        const userId = req.user.id;
         const { email, firstName, lastName, password, role, avatarURL } = req.body;
         if (!email || !firstName || !lastName || !password || !role) {
             return res.status(400).json({
@@ -123,6 +135,7 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 message: "Не удалось создать пользователя",
             });
         }
+        yield (0, logAction_1.logAction)(userId, "Создание нового пользователя", "POST");
         return res.status(201).json({
             id: user.id,
             firstName: user.firstName,
@@ -146,6 +159,8 @@ exports.createUser = createUser;
  */
 const editUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // @ts-ignore
+        const userId = req.user.id;
         const { email, firstName, lastName, newPassword, role, avatarURL } = req.body;
         const { id } = req.params;
         if (!email || !firstName || !lastName || !role) {
@@ -184,6 +199,7 @@ const editUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 },
             });
         }
+        yield (0, logAction_1.logAction)(userId, "Редактирование данных пользователя", "PUT");
         return res
             .status(204)
             .json({ message: "Пользователь успешно отредактирована" });
@@ -202,12 +218,15 @@ exports.editUser = editUser;
  */
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // @ts-ignore
+        const userId = req.user.id;
         const { id } = req.params;
         yield prisma_client_1.prisma.user.delete({
             where: {
                 id,
             },
         });
+        yield (0, logAction_1.logAction)(userId, "Удаление пользователя", "DELETE");
         return res.status(204).json({ message: "Пользователь успешно удалена" });
     }
     catch (error) {

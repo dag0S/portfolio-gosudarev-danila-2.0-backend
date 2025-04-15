@@ -9,7 +9,6 @@ export const generateTokens = (user: User) => {
     { id: user.id, role: user.role },
     ACCESS_SECRET,
     { expiresIn: "10m" }
-    // { expiresIn: "5s" }
   );
 
   const refreshToken = jwt.sign({ id: user.id }, REFRESH_SECRET, {

@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.removeGenre = exports.editGenre = exports.createGenre = exports.getGenres = void 0;
 const prisma_client_1 = require("../prisma/prisma-client");
+const logAction_1 = require("../utils/logAction");
 /**
  * @route GET /api/genres
  * @desc Получение всех жанров
@@ -18,7 +19,11 @@ const prisma_client_1 = require("../prisma/prisma-client");
  */
 const getGenres = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const genres = yield prisma_client_1.prisma.genre.findMany();
+        const genres = yield prisma_client_1.prisma.genre.findMany({
+            orderBy: {
+                name: "asc",
+            },
+        });
         if (!genres) {
             throw new Error();
         }
@@ -38,6 +43,8 @@ exports.getGenres = getGenres;
  */
 const createGenre = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // @ts-ignore
+        const userId = req.user.id;
         const { name } = req.body;
         if (!name) {
             return res.status(400).json({
@@ -62,6 +69,7 @@ const createGenre = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (!genre) {
             throw new Error();
         }
+        yield (0, logAction_1.logAction)(userId, `Добавление жанра: ${genre.name}`, "POST");
         return res.status(200).json({ message: "Жанр успешно создан" });
     }
     catch (error) {
@@ -78,6 +86,8 @@ exports.createGenre = createGenre;
  */
 const editGenre = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // @ts-ignore
+        const userId = req.user.id;
         const { id } = req.params;
         const { name } = req.body;
         if (!name) {
@@ -85,7 +95,7 @@ const editGenre = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 message: "Заполните обязательные поля",
             });
         }
-        yield prisma_client_1.prisma.genre.update({
+        const updatedGenre = yield prisma_client_1.prisma.genre.update({
             where: {
                 id,
             },
@@ -93,6 +103,7 @@ const editGenre = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 name,
             },
         });
+        yield (0, logAction_1.logAction)(userId, `Редактирование жанра: ${updatedGenre.name}`, "PUT");
         return res.status(200).json({ message: "Жанр успешно отредактирован" });
     }
     catch (error) {
@@ -109,12 +120,15 @@ exports.editGenre = editGenre;
  */
 const removeGenre = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // @ts-ignore
+        const userId = req.user.id;
         const { id } = req.params;
-        yield prisma_client_1.prisma.genre.delete({
+        const deletedGenre = yield prisma_client_1.prisma.genre.delete({
             where: {
                 id,
             },
         });
+        yield (0, logAction_1.logAction)(userId, `Удаление жанра: ${deletedGenre.name}`, "DELETE");
         return res.status(200).json({ message: "Жанр успешно удален" });
     }
     catch (error) {

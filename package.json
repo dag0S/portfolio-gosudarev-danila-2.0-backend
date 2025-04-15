@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "tsc --build",
+    "copy:static": "copyfiles -u 1 \"src/static/**/*\" build",
+    "build": "tsc --build && npm run copy:static",
     "start": "node ./build/index.js",
     "dev": "nodemon ./src/index.ts",
     "prisma:push": "prisma db push --schema=\"./src/prisma/schema.prisma\"",
     "prisma:studio": "prisma studio --schema=\"./src/prisma/schema.prisma\"",
     "prisma:seed": "prisma db seed",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate --schema=\"./src/prisma/schema.prisma\""
   },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} ./src/prisma/seed.ts"
@@ -39,6 +40,8 @@
     "@types/morgan": "^1.9.9",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.13.11",
+    "copyfiles": "^2.4.1",
+    "cpy": "^11.1.0",
     "nodemon": "^3.1.9",
     "prisma": "^6.5.0",
     "ts-node": "^10.9.2",

@@ -127,7 +127,6 @@ export const login = async (
       httpOnly: true,
       sameSite: "strict",
       maxAge: 10 * 60 * 1000,
-      // maxAge: 5 * 1000,
     });
 
     res.cookie(JWT_REFRESH_TOKEN, refreshToken, {
