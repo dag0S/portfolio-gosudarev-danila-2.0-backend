@@ -16,7 +16,7 @@ app.use(logger("dev"));
 app.use(express.static(path.resolve(__dirname, "static/books/")));
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.ORIGIN,
     credentials: true,
   })
 );
