@@ -68,13 +68,15 @@ export const register = async (
 
     res.cookie(JWT_ACCESS_TOKEN, accessToken, {
       httpOnly: true,
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 10 * 60 * 1000,
     });
 
     res.cookie(JWT_REFRESH_TOKEN, refreshToken, {
       httpOnly: true,
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
@@ -125,13 +127,15 @@ export const login = async (
 
     res.cookie(JWT_ACCESS_TOKEN, accessToken, {
       httpOnly: true,
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 10 * 60 * 1000,
     });
 
     res.cookie(JWT_REFRESH_TOKEN, refreshToken, {
       httpOnly: true,
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
@@ -240,7 +244,8 @@ export const refresh = async (req: Request, res: Response): Promise<any> => {
 
     res.cookie(JWT_ACCESS_TOKEN, accessToken, {
       httpOnly: true,
-      sameSite: "strict",
+      secure: true,
+      sameSite: "none",
       maxAge: 10 * 60 * 1000,
     });
 
