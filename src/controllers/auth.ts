@@ -166,8 +166,18 @@ export const logout = async (req: Request, res: Response): Promise<any> => {
     const userId = req.user.id;
     await logAction(userId, "Выход из аккаунта", "POST");
 
-    res.clearCookie(JWT_ACCESS_TOKEN);
-    res.clearCookie(JWT_REFRESH_TOKEN);
+    res.clearCookie(JWT_ACCESS_TOKEN, {
+      httpOnly: true,
+      secure: isProd,
+      domain: process.env.COOKIE_DOMAIN,
+      sameSite: isProd ? "none" : "lax",
+    });
+    res.clearCookie(JWT_REFRESH_TOKEN, {
+      httpOnly: true,
+      secure: isProd,
+      domain: process.env.COOKIE_DOMAIN,
+      sameSite: isProd ? "none" : "lax",
+    });
 
     return res.json({ message: "Вы вышли из системы" });
   } catch (error) {
