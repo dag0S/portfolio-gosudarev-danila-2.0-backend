@@ -13,6 +13,8 @@ import { logAction } from "../utils/logAction";
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET as string;
 
+const isProd = process.env.NODE_ENV === "production";
+
 /**
  * @route POST /api/auth/register
  * @desc Регистрация
@@ -68,15 +70,17 @@ export const register = async (
 
     res.cookie(JWT_ACCESS_TOKEN, accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProd,
+      domain: process.env.COOKIE_DOMAIN,
+      sameSite: isProd ? "none" : "lax",
       maxAge: 10 * 60 * 1000,
     });
 
     res.cookie(JWT_REFRESH_TOKEN, refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProd,
+      domain: process.env.COOKIE_DOMAIN,
+      sameSite: isProd ? "none" : "lax",
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
@@ -127,15 +131,17 @@ export const login = async (
 
     res.cookie(JWT_ACCESS_TOKEN, accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProd,
+      domain: process.env.COOKIE_DOMAIN,
+      sameSite: isProd ? "none" : "lax",
       maxAge: 10 * 60 * 1000,
     });
 
     res.cookie(JWT_REFRESH_TOKEN, refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProd,
+      domain: process.env.COOKIE_DOMAIN,
+      sameSite: isProd ? "none" : "lax",
       maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
@@ -244,8 +250,9 @@ export const refresh = async (req: Request, res: Response): Promise<any> => {
 
     res.cookie(JWT_ACCESS_TOKEN, accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProd,
+      domain: process.env.COOKIE_DOMAIN,
+      sameSite: isProd ? "none" : "lax",
       maxAge: 10 * 60 * 1000,
     });
 
