@@ -12,19 +12,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.editUser = exports.createUser = exports.getUserById = exports.getUsers = void 0;
+exports.remove = exports.edit = exports.create = exports.getById = exports.getAll = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const prisma_client_1 = require("../prisma/prisma-client");
-const logAction_1 = require("../utils/logAction");
 /**
  * @route GET /api/users
- * @desc Получение спика пользователей
+ * @desc Получение списка пользователей
  * @access Private
  */
-const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getAll = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // @ts-ignore
-        const userId = req.user.id;
         const users = yield prisma_client_1.prisma.user.findMany({
             select: {
                 id: true,
@@ -43,7 +40,6 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!users) {
             throw new Error();
         }
-        yield (0, logAction_1.logAction)(userId, "Получение списка пользователей", "GET");
         return res.status(200).json(users);
     }
     catch (error) {
@@ -52,16 +48,14 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
     }
 });
-exports.getUsers = getUsers;
+exports.getAll = getAll;
 /**
  * @route GET /api/users/:id
  * @desc Получение пользователя по id
  * @access Private
  */
-const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // @ts-ignore
-        const userId = req.user.id;
         const { id } = req.params;
         const user = yield prisma_client_1.prisma.user.findUnique({
             where: {
@@ -83,7 +77,6 @@ const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 message: "Пользователя не существует",
             });
         }
-        yield (0, logAction_1.logAction)(userId, "Получение данных о конкретном пользователе", "GET");
         return res.status(200).json(user);
     }
     catch (error) {
@@ -92,16 +85,14 @@ const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         });
     }
 });
-exports.getUserById = getUserById;
+exports.getById = getById;
 /**
  * @route POST /api/users
  * @desc Создание пользователя
  * @access Private
  */
-const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const create = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // @ts-ignore
-        const userId = req.user.id;
         const { email, firstName, lastName, password, role, avatarURL } = req.body;
         if (!email || !firstName || !lastName || !password || !role) {
             return res.status(400).json({
@@ -135,7 +126,6 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 message: "Не удалось создать пользователя",
             });
         }
-        yield (0, logAction_1.logAction)(userId, "Создание нового пользователя", "POST");
         return res.status(201).json({
             id: user.id,
             firstName: user.firstName,
@@ -151,16 +141,14 @@ const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         });
     }
 });
-exports.createUser = createUser;
+exports.create = create;
 /**
  * @route PUT /api/users/:id
  * @desc Редактирование пользователя
  * @access Private
  */
-const editUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const edit = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // @ts-ignore
-        const userId = req.user.id;
         const { email, firstName, lastName, newPassword, role, avatarURL } = req.body;
         const { id } = req.params;
         if (!email || !firstName || !lastName || !role) {
@@ -199,7 +187,6 @@ const editUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 },
             });
         }
-        yield (0, logAction_1.logAction)(userId, "Редактирование данных пользователя", "PUT");
         return res
             .status(204)
             .json({ message: "Пользователь успешно отредактирована" });
@@ -210,23 +197,20 @@ const editUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         });
     }
 });
-exports.editUser = editUser;
+exports.edit = edit;
 /**
  * @route DELETE /api/users/:id
  * @desc Удаление пользователя
  * @access Private
  */
-const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const remove = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // @ts-ignore
-        const userId = req.user.id;
         const { id } = req.params;
         yield prisma_client_1.prisma.user.delete({
             where: {
                 id,
             },
         });
-        yield (0, logAction_1.logAction)(userId, "Удаление пользователя", "DELETE");
         return res.status(204).json({ message: "Пользователь успешно удалена" });
     }
     catch (error) {
@@ -235,4 +219,4 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         });
     }
 });
-exports.deleteUser = deleteUser;
+exports.remove = remove;

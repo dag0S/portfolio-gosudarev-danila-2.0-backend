@@ -18,10 +18,10 @@ export const getAll = async (
   try {
     const { searchBy } = req.query;
 
-    const booksWhere: any = {};
+    const projectsWhere: any = {};
 
     if (searchBy) {
-      booksWhere["OR"] = [
+      projectsWhere["OR"] = [
         {
           title: {
             contains: searchBy,
@@ -43,17 +43,17 @@ export const getAll = async (
       ];
     }
 
-    const books = await prisma.project.findMany({
-      where: booksWhere,
+    const projects = await prisma.project.findMany({
+      where: projectsWhere,
       include: {
         tags: {},
       },
     });
 
-    return res.status(200).json(books);
+    return res.status(200).json(projects);
   } catch (error) {
     return res.status(500).json({
-      message: "Не удалось получить книги",
+      message: "Не удалось получить проекты",
     });
   }
 };
@@ -118,7 +118,7 @@ export const create = async (
 ): Promise<any> => {
   try {
     const { description, title, authorId } = req.body;
-    let image = null;
+    let imageURL = null;
 
     if (!description || !title || !authorId) {
       return res.status(400).json({
@@ -128,7 +128,7 @@ export const create = async (
 
     if (req.file) {
       const { filename } = req.file;
-      image = filename;
+      imageURL = filename;
     }
 
     const project = await prisma.project.create({
@@ -136,7 +136,7 @@ export const create = async (
         title,
         description,
         authorId,
-        image,
+        imageURL,
       },
     });
 
@@ -210,8 +210,8 @@ export const remove = async (
       return res.status(404).json({ message: "Проект не найден" });
     }
 
-    if (project.image) {
-      const filePath = path.join(__dirname, `../static/books/${project.image}`);
+    if (project.imageURL) {
+      const filePath = path.join(__dirname, `../static/books/${project.imageURL}`);
 
       if (!fs.existsSync(filePath)) {
         return res.status(404).json({ message: "Файл не найден" });

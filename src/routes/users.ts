@@ -10,7 +10,7 @@ const router = Router();
 router.get("/", isAuthenticated, checkRole(["ADMIN"]), getAll);
 
 // /api/users/:id
-router.get("/:id", isAuthenticated, checkRole(["ADMIN", "LIBRARIAN"]), getById);
+router.get("/:id", isAuthenticated, checkRole(["ADMIN"]), getById);
 
 // /api/users
 router.post("/", isAuthenticated, checkRole(["ADMIN"]), create);

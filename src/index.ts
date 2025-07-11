@@ -13,7 +13,7 @@ const app = express();
 const port = process.env.PORT || 4321;
 
 app.use(logger("dev"));
-app.use(express.static(path.resolve(__dirname, "static/books/")));
+app.use(express.static(path.resolve(__dirname, "static/projectsImages/")));
 app.use(
   cors({
     origin: process.env.ORIGIN,

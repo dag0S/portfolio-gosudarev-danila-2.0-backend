@@ -53,7 +53,7 @@ export const register = async (
         lastName,
         email,
         password: hashPassword,
-        role: Role.READER,
+        role: Role.USER,
       },
     });
 
@@ -157,7 +157,6 @@ export const login = async (
  */
 export const logout = async (req: Request, res: Response): Promise<any> => {
   try {
-
     res.clearCookie(JWT_ACCESS_TOKEN, {
       httpOnly: true,
       secure: isProd,

@@ -3,13 +3,7 @@ import multer from "multer";
 import { v4 as uuidV4 } from "uuid";
 import path from "path";
 
-import {
-  create,
-  edit,
-  getAll,
-  getOne,
-  remove,
-} from "../controllers/projects";
+import { create, edit, getAll, getOne, remove } from "../controllers/projects";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 import { checkRole } from "../middlewares/checkRole";
 
@@ -35,13 +29,13 @@ router.get("/:id", getOne);
 router.post(
   "/",
   isAuthenticated,
-  checkRole(["ADMIN", "LIBRARIAN"]),
-  upload.single("bookCoverURL"),
+  checkRole(["ADMIN"]),
+  upload.single("imageURL"),
   create
 );
 
 // /api/projects/:id
-router.put("/:id", isAuthenticated, checkRole(["ADMIN", "LIBRARIAN"]), edit);
+router.put("/:id", isAuthenticated, checkRole(["ADMIN"]), edit);
 
 // /api/projects/:id
 router.delete("/:id", isAuthenticated, checkRole(["ADMIN"]), remove);

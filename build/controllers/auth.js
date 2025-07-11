@@ -19,9 +19,9 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prisma_client_1 = require("../prisma/prisma-client");
 const cookieName_1 = require("../const/cookieName");
 const generateTokens_1 = require("../utils/generateTokens");
-const logAction_1 = require("../utils/logAction");
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
+const isProd = process.env.NODE_ENV === "production";
 /**
  * @route POST /api/auth/register
  * @desc Регистрация
@@ -53,7 +53,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 lastName,
                 email,
                 password: hashPassword,
-                role: client_1.Role.READER,
+                role: client_1.Role.USER,
             },
         });
         if (!user) {
@@ -61,16 +61,19 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 message: "Не удалось создать пользователя",
             });
         }
-        yield (0, logAction_1.logAction)(user.id, "Регистрация нового пользователя", "POST");
         const { accessToken, refreshToken } = (0, generateTokens_1.generateTokens)(user);
         res.cookie(cookieName_1.JWT_ACCESS_TOKEN, accessToken, {
             httpOnly: true,
-            sameSite: "strict",
+            secure: isProd,
+            domain: process.env.COOKIE_DOMAIN,
+            sameSite: isProd ? "none" : "lax",
             maxAge: 10 * 60 * 1000,
         });
         res.cookie(cookieName_1.JWT_REFRESH_TOKEN, refreshToken, {
             httpOnly: true,
-            sameSite: "strict",
+            secure: isProd,
+            domain: process.env.COOKIE_DOMAIN,
+            sameSite: isProd ? "none" : "lax",
             maxAge: 30 * 24 * 60 * 60 * 1000,
         });
         return res.status(201).json({ message: "Пользователь зарегистрирован" });
@@ -106,16 +109,19 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 message: "Неверный логин или пароль",
             });
         }
-        yield (0, logAction_1.logAction)(user.id, "Вход в аккаунт", "POST");
         const { accessToken, refreshToken } = (0, generateTokens_1.generateTokens)(user);
         res.cookie(cookieName_1.JWT_ACCESS_TOKEN, accessToken, {
             httpOnly: true,
-            sameSite: "strict",
+            secure: isProd,
+            domain: process.env.COOKIE_DOMAIN,
+            sameSite: isProd ? "none" : "lax",
             maxAge: 10 * 60 * 1000,
         });
         res.cookie(cookieName_1.JWT_REFRESH_TOKEN, refreshToken, {
             httpOnly: true,
-            sameSite: "strict",
+            secure: isProd,
+            domain: process.env.COOKIE_DOMAIN,
+            sameSite: isProd ? "none" : "lax",
             maxAge: 30 * 24 * 60 * 60 * 1000,
         });
         return res
@@ -136,11 +142,18 @@ exports.login = login;
  */
 const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // @ts-ignore
-        const userId = req.user.id;
-        yield (0, logAction_1.logAction)(userId, "Выход из аккаунта", "POST");
-        res.clearCookie(cookieName_1.JWT_ACCESS_TOKEN);
-        res.clearCookie(cookieName_1.JWT_REFRESH_TOKEN);
+        res.clearCookie(cookieName_1.JWT_ACCESS_TOKEN, {
+            httpOnly: true,
+            secure: isProd,
+            domain: process.env.COOKIE_DOMAIN,
+            sameSite: isProd ? "none" : "lax",
+        });
+        res.clearCookie(cookieName_1.JWT_REFRESH_TOKEN, {
+            httpOnly: true,
+            secure: isProd,
+            domain: process.env.COOKIE_DOMAIN,
+            sameSite: isProd ? "none" : "lax",
+        });
         return res.json({ message: "Вы вышли из системы" });
     }
     catch (error) {
@@ -203,11 +216,12 @@ const refresh = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!user) {
             return res.status(403).json({ message: "Пользователь не найден" });
         }
-        yield (0, logAction_1.logAction)(user.id, "Обновление токена доступа", "POST");
         const { accessToken } = (0, generateTokens_1.generateTokens)(user);
         res.cookie(cookieName_1.JWT_ACCESS_TOKEN, accessToken, {
             httpOnly: true,
-            sameSite: "strict",
+            secure: isProd,
+            domain: process.env.COOKIE_DOMAIN,
+            sameSite: isProd ? "none" : "lax",
             maxAge: 10 * 60 * 1000,
         });
         return res.status(200).json({ message: "Токен доступа обновлен" });

@@ -10,10 +10,10 @@ const router = Router();
 router.get("/", getAll);
 
 // /api/genres
-router.post("/", isAuthenticated, checkRole(["ADMIN", "LIBRARIAN"]), create);
+router.post("/", isAuthenticated, checkRole(["ADMIN"]), create);
 
 // /api/genres/:id
-router.put("/:id", isAuthenticated, checkRole(["ADMIN", "LIBRARIAN"]), edit);
+router.put("/:id", isAuthenticated, checkRole(["ADMIN"]), edit);
 
 // /api/genres/:id
 router.delete("/:id", isAuthenticated, checkRole(["ADMIN"]), remove);
