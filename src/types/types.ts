@@ -1,6 +1,3 @@
-export interface IBookQueryParams {
+export interface IProjectsQueryParams {
   searchBy?: string;
-  sortBy?: string;
-  genres?: string;
-  authors?: string;
 }

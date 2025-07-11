@@ -1,6 +1,5 @@
-export interface CreateBookDto {
+export interface CreateProjectDto {
   title: string;
   description: string;
-  copies: number;
   authorId: string;
 }

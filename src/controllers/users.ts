@@ -4,18 +4,14 @@ import bcrypt from "bcrypt";
 import { CreateUserDto } from "../dtos/CreateUser.dto";
 import { prisma } from "../prisma/prisma-client";
 import { EditUserDto } from "../dtos/EditUser.dto";
-import { logAction } from "../utils/logAction";
 
 /**
  * @route GET /api/users
- * @desc Получение спика пользователей
+ * @desc Получение списка пользователей
  * @access Private
  */
-export const getUsers = async (req: Request, res: Response): Promise<any> => {
+export const getAll = async (req: Request, res: Response): Promise<any> => {
   try {
-    // @ts-ignore
-    const userId = req.user.id;
-
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -36,8 +32,6 @@ export const getUsers = async (req: Request, res: Response): Promise<any> => {
       throw new Error();
     }
 
-    await logAction(userId, "Получение списка пользователей", "GET");
-
     return res.status(200).json(users);
   } catch (error) {
     return res.status(500).json({
@@ -51,13 +45,11 @@ export const getUsers = async (req: Request, res: Response): Promise<any> => {
  * @desc Получение пользователя по id
  * @access Private
  */
-export const getUserById = async (
+export const getById = async (
   req: Request<{ id: string }>,
   res: Response
 ): Promise<any> => {
   try {
-    // @ts-ignore
-    const userId = req.user.id;
     const { id } = req.params;
 
     const user = await prisma.user.findUnique({
@@ -82,12 +74,6 @@ export const getUserById = async (
       });
     }
 
-    await logAction(
-      userId,
-      "Получение данных о конкретном пользователе",
-      "GET"
-    );
-
     return res.status(200).json(user);
   } catch (error) {
     return res.status(500).json({
@@ -101,13 +87,11 @@ export const getUserById = async (
  * @desc Создание пользователя
  * @access Private
  */
-export const createUser = async (
+export const create = async (
   req: Request<{}, {}, CreateUserDto>,
   res: Response
 ): Promise<any> => {
   try {
-    // @ts-ignore
-    const userId = req.user.id;
     const { email, firstName, lastName, password, role, avatarURL } = req.body;
 
     if (!email || !firstName || !lastName || !password || !role) {
@@ -148,8 +132,6 @@ export const createUser = async (
       });
     }
 
-    await logAction(userId, "Создание нового пользователя", "POST");
-
     return res.status(201).json({
       id: user.id,
       firstName: user.firstName,
@@ -170,13 +152,11 @@ export const createUser = async (
  * @desc Редактирование пользователя
  * @access Private
  */
-export const editUser = async (
+export const edit = async (
   req: Request<{ id: string }, {}, EditUserDto>,
   res: Response
 ): Promise<any> => {
   try {
-    // @ts-ignore
-    const userId = req.user.id;
     const { email, firstName, lastName, newPassword, role, avatarURL } =
       req.body;
     const { id } = req.params;
@@ -219,8 +199,6 @@ export const editUser = async (
       });
     }
 
-    await logAction(userId, "Редактирование данных пользователя", "PUT");
-
     return res
       .status(204)
       .json({ message: "Пользователь успешно отредактирована" });
@@ -236,13 +214,11 @@ export const editUser = async (
  * @desc Удаление пользователя
  * @access Private
  */
-export const deleteUser = async (
+export const remove = async (
   req: Request<{ id: string }>,
   res: Response
 ): Promise<any> => {
   try {
-    // @ts-ignore
-    const userId = req.user.id;
     const { id } = req.params;
 
     await prisma.user.delete({
@@ -250,8 +226,6 @@ export const deleteUser = async (
         id,
       },
     });
-
-    await logAction(userId, "Удаление пользователя", "DELETE");
 
     return res.status(204).json({ message: "Пользователь успешно удалена" });
   } catch (error) {

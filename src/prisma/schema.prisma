@@ -8,80 +8,49 @@ datasource db {
 }
 
 model User {
-  id        String      @id @default(uuid())
+  id        String    @id @default(uuid())
   firstName String
   lastName  String
-  email     String      @unique
+  email     String    @unique
   avatarURL String?
   password  String
+  projects  Project[]
   role      Role
-  borrowing Borrowing[]
-  log       Log[]
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("users")
 }
 
-model Book {
-  id           String      @id @default(uuid())
-  title        String
-  description  String
-  bookCoverURL String?
-  authorId     String
-  author       Author      @relation(fields: [authorId], references: [id])
-  copies       Int
-  views        Int         @default(0)
-  borrowing    Borrowing[]
-  genres       Genre[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+model Project {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  image       String?
+  views       Int      @default(0)
+  role        Role
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tags Tag[]
+
+  author   User   @relation(fields: [authorId], references: [id])
+  authorId String @map("author_id")
+
+  @@map("projects")
 }
 
-model Author {
-  id        String   @id @default(uuid())
+model Tag {
+  id        String    @id @default(uuid())
   name      String
-  Book      Book[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
+  project   Project[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-model Genre {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  bookId    String?
-  books     Book[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Borrowing {
-  id         String    @id @default(uuid())
-  user       User      @relation(fields: [userId], references: [id])
-  userId     String
-  book       Book      @relation(fields: [bookId], references: [id])
-  bookId     String
-  borrowedAt DateTime  @default(now())
-  dueDate    DateTime
-  returnedAt DateTime?
-}
-
-model Log {
-  id         String      @id @default(uuid())
-  user       User        @relation(fields: [userId], references: [id])
-  userId     String
-  action     String
-  methodHTTP MethodsHTTP
-  createdAt  DateTime    @default(now())
+  @@map("tags")
 }
 
 enum Role {
   ADMIN
-  LIBRARIAN
-  READER
-}
-
-enum MethodsHTTP {
-  GET
-  POST
-  PUT
-  DELETE
+  USER
 }

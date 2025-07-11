@@ -7,10 +7,9 @@ import {
   create,
   edit,
   getAll,
-  getAllInfo,
   getOne,
   remove,
-} from "../controllers/books";
+} from "../controllers/projects";
 import { isAuthenticated } from "../middlewares/isAuthenticated";
 import { checkRole } from "../middlewares/checkRole";
 
@@ -26,21 +25,13 @@ const upload = multer({ storage });
 
 const router = Router();
 
-// /api/books
+// /api/projects
 router.get("/", getAll);
 
-// /api/books/info
-router.get(
-  "/info",
-  isAuthenticated,
-  checkRole(["ADMIN", "LIBRARIAN"]),
-  getAllInfo
-);
-
-// /api/books/:id
+// /api/projects/:id
 router.get("/:id", getOne);
 
-// /api/books
+// /api/projects
 router.post(
   "/",
   isAuthenticated,
@@ -49,10 +40,10 @@ router.post(
   create
 );
 
-// /api/books/:id
+// /api/projects/:id
 router.put("/:id", isAuthenticated, checkRole(["ADMIN", "LIBRARIAN"]), edit);
 
-// /api/books/:id
+// /api/projects/:id
 router.delete("/:id", isAuthenticated, checkRole(["ADMIN"]), remove);
 
 export default router;
