@@ -53,11 +53,10 @@ async function up() {
 
   const users = await prisma.user.findMany();
 
-  // Создание книг
+  // Создание проектов
   const projects = [
     {
       title: "Аукцион для стримеров",
-      author: "Адитья Бхаргава",
       tags: [
         "NextJS",
         "React",
@@ -73,6 +72,51 @@ async function up() {
         "Этот сайт представляет собой учебную копию pointauc.com, и создан исключительно для обучения. Он разработан с использованиемследующих технологий: React, Redux Toolkit, NextJS, Typescript, React Hook Form и Framer Motion. Полный исходный код можно найти врепозитории на GitHub по ссылке. Этот сайт предназначен для взаимодействия между стримером и его аудиторией, позволяя им совместно принимать решения во время стрима. Будь то выбор фильма, сериала или игры для развлечения.",
       views: 122,
       imageURL: "project-1.jpg",
+      linkLiveDemo: "https://auction-for-streamers.netlify.app/ru",
+      linkFrontendCode: "https://github.com/dag0S/auction-for-streamers",
+      linkBackendCode: null,
+    },
+    {
+      title: "Аукцион для стримеров",
+      tags: [
+        "NextJS",
+        "React",
+        "Redux Toolkit",
+        "Figma",
+        "Tailwind",
+        "shadcn",
+        "TypeScript",
+        "JavaScript",
+        "HTML",
+      ],
+      description:
+        "Этот сайт представляет собой учебную копию pointauc.com, и создан исключительно для обучения. Он разработан с использованиемследующих технологий: React, Redux Toolkit, NextJS, Typescript, React Hook Form и Framer Motion. Полный исходный код можно найти врепозитории на GitHub по ссылке. Этот сайт предназначен для взаимодействия между стримером и его аудиторией, позволяя им совместно принимать решения во время стрима. Будь то выбор фильма, сериала или игры для развлечения.",
+      views: 122,
+      imageURL: "project-1.jpg",
+      linkLiveDemo: "https://auction-for-streamers.netlify.app/ru",
+      linkFrontendCode: "https://github.com/dag0S/auction-for-streamers",
+      linkBackendCode: null,
+    },
+    {
+      title: "Аукцион для стримеров",
+      tags: [
+        "NextJS",
+        "React",
+        "Redux Toolkit",
+        "Figma",
+        "Tailwind",
+        "shadcn",
+        "TypeScript",
+        "JavaScript",
+        "HTML",
+      ],
+      description:
+        "Этот сайт представляет собой учебную копию pointauc.com, и создан исключительно для обучения. Он разработан с использованиемследующих технологий: React, Redux Toolkit, NextJS, Typescript, React Hook Form и Framer Motion. Полный исходный код можно найти врепозитории на GitHub по ссылке. Этот сайт предназначен для взаимодействия между стримером и его аудиторией, позволяя им совместно принимать решения во время стрима. Будь то выбор фильма, сериала или игры для развлечения.",
+      views: 122,
+      imageURL: "project-1.jpg",
+      linkLiveDemo: "https://auction-for-streamers.netlify.app/ru",
+      linkFrontendCode: "https://github.com/dag0S/auction-for-streamers",
+      linkBackendCode: null,
     },
   ];
 
@@ -89,6 +133,9 @@ async function up() {
         imageURL: project.imageURL,
         views: project.views,
         authorId: users[0].id,
+        linkLiveDemo: project.linkLiveDemo,
+        linkFrontendCode: project.linkFrontendCode,
+        linkBackendCode: project.linkBackendCode,
       },
     });
   }
