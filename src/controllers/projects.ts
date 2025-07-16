@@ -36,8 +36,12 @@ export const getAll = async (
         },
         {
           tags: {
-            contains: searchBy,
-            mode: "insensitive",
+            some: {
+              name: {
+                contains: searchBy,
+                mode: "insensitive",
+              },
+            },
           },
         },
       ];
@@ -211,7 +215,10 @@ export const remove = async (
     }
 
     if (project.imageURL) {
-      const filePath = path.join(__dirname, `../static/books/${project.imageURL}`);
+      const filePath = path.join(
+        __dirname,
+        `../static/books/${project.imageURL}`
+      );
 
       if (!fs.existsSync(filePath)) {
         return res.status(404).json({ message: "Файл не найден" });
